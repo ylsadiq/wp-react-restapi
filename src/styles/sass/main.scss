@@ -1,0 +1,22 @@
+// @import "../../../node_modules/bootstrap/scss/bootstrap.scss";
+@import "bootstrap/scss/bootstrap.scss";
+
+// variable scss
+@import "variables";
+// mixin scss
+@import "mixins";
+@import "extends";
+// default scss
+@import "common";
+
+// button scss
+@import "button";
+
+// body scss
+@import "menu";
+@import "banner";
+@import "feature_part";
+@import "product_list";
+@import "our_offer";
+@import "subscribe_area";
+@import "footer";
