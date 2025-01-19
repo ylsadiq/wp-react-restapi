@@ -10,16 +10,35 @@ const Header = () => {
   const [logoUrl, setLogoUrl] = useState("");
 
   useEffect(() => {
-    fetch("/wp-json/blocktheme18/v1/theme-logo")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        setLogoUrl(data.logo_url);
-      })
-      .catch((error) => {
-        console.error("Error fetching logo:", error);
-      });
-  }, []);
+    // Initial logo fetch
+    fetchLogo();
+
+    // Listen for customizer changes
+    const handleLogoUpdate = (event) => {
+        setLogoUrl(event.detail.newLogo);
+    };
+
+    document.addEventListener('logoUpdate', handleLogoUpdate);
+
+    // Cleanup listener
+    return () => {
+        document.removeEventListener('logoUpdate', handleLogoUpdate);
+    };
+}, []);
+
+const fetchLogo = async () => {
+  try {
+      const response = await fetch('/wp-json/secondtry/v1/logo');
+      const data = await response.json();
+      if (data.success) {
+          setLogoUrl(data.logo_url);
+      }
+  } catch (error) {
+      console.error('Error fetching logo:', error);
+      // Use default logo on error
+      setLogoUrl('/src/Assets/images/logo.png');
+  }
+};
 
   const handleClose = () => {
     setSearchOpen(!searchOpen);

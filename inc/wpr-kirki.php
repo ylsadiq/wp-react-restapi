@@ -1,83 +1,87 @@
 <?php
-// Register Kirki Panel and Section
-new \Kirki\Panel(
-    'blocktheme18_panel',
-    [
-        'priority'    => 10,
-        'title'       => esc_html__('Blocktheme18 Option', 'blocktheme18'),
-        'description' => esc_html__('My Panel Description.', 'blocktheme18'),
-    ]
-);
+// functions.php or your customizer file
 
-function blocktheme18_header_logo_section() {
-    // Section
-    new \Kirki\Section(
-        'blocktheme18_header_logo_section',
-        [
-            'title'       => esc_html__('Header Logo', 'blocktheme18'),
-            'description' => esc_html__('My Header Section Description.', 'blocktheme18'),
-            'panel'       => 'blocktheme18_panel',
-            'priority'    => 160,
-        ]
-    );
+class Secondtry_Customizer {
+    public function __construct() {
+        add_action('init', array($this, 'setup_customizer_settings'));
+        add_action('customize_preview_init', array($this, 'customize_preview_js'));
+    }
 
-    // Logo Field
-    new \Kirki\Field\Image(
-        [
-            'settings'    => 'header_logo',
-            'label'       => esc_html__('Header Logo', 'blocktheme18'),
-            'description' => esc_html__('Please set your header logo', 'blocktheme18'),
-            'section'     => 'blocktheme18_header_logo_section',
-            'default'     => get_template_directory_uri() . '/src/Assets/images/logo.png',
-            'choices'     => [
-                'save_as' => 'url',
-            ],
-        ]
-    );
-}
+    public function setup_customizer_settings() {
+        // Panel
+        new \Kirki\Panel(
+            'secondtry_panel',
+            [
+                'priority'    => 10,
+                'title'       => esc_html__('Blocktheme18 Options', 'secondtry'),
+            ]
+        );
 
-// Initialize the section
-add_action('init', 'blocktheme18_header_logo_section');
+        // Section
+        new \Kirki\Section(
+            'secondtry_header_logo_section',
+            [
+                'title'       => esc_html__('Header Logo', 'secondtry'),
+                'panel'       => 'secondtry_panel',
+                'priority'    => 160,
+            ]
+        );
 
-// Register REST API endpoint for the logo
-function blocktheme18_register_rest_fields() {
-    register_rest_route(
-        'blocktheme18/v1',
-        '/theme-logo',
-        array(
-            'methods'  => 'GET',
-            'callback' => 'blocktheme18_get_theme_logo',
-            'permission_callback' => '__return_true'
-        )
-    );
-}
-add_action('rest_api_init', 'blocktheme18_register_rest_fields');
-
-// Callback function to get the logo URL
-function blocktheme18_get_theme_logo() {
-    $logo_url = get_theme_mod('header_logo', get_template_directory_uri() . '/src/Assets/images/logo.png');
-    
-    if (!$logo_url) {
-        return new WP_Error(
-            'no_logo',
-            'No logo found',
-            array('status' => 404)
+        // Logo Field
+        new \Kirki\Field\Image(
+            [
+                'settings'    => 'header_logo',
+                'label'       => esc_html__('Header Logo', 'secondtry'),
+                'section'     => 'secondtry_header_logo_section',
+                'default'     => get_template_directory_uri() . '/src/Assets/images/logo.png',
+                'transport'   => 'postMessage',
+                'option_type' => 'theme_mod',
+                'choices'     => [
+                    'save_as' => 'url',
+                ],
+            ]
         );
     }
 
-    return array(
-        'logo_url' => esc_url($logo_url)
-    );
+    // Add live preview script
+    public function customize_preview_js() {
+        wp_enqueue_script(
+            'secondtry-customizer',
+            get_template_directory_uri() . '/src/customizer.js',
+            ['jquery', 'customize-preview'],
+            '1.0',
+            true
+        );
+    }
 }
 
-// Optional: Add to theme customizer preview
-function blocktheme18_customize_preview_js() {
-    wp_enqueue_script(
-        'blocktheme18-customizer',
-        get_template_directory_uri() . '/js/customizer.js',
-        array('jquery', 'customize-preview'),
-        '1.0.0',
-        true
-    );
+// Initialize the customizer
+new Secondtry_Customizer();
+
+// Add REST API endpoint for the logo
+function secondtry_register_rest_routes() {
+    register_rest_route('secondtry/v1', '/logo', array(
+        array(
+            'methods'             => 'GET',
+            'callback'           => 'secondtry_get_logo_rest',
+            'permission_callback' => '__return_true'
+        )
+    ));
 }
-add_action('customize_preview_init', 'blocktheme18_customize_preview_js');
+add_action('rest_api_init', 'secondtry_register_rest_routes');
+
+// REST API callback function
+function secondtry_get_logo_rest() {
+    $logo = secondtry_custom_logo(); // Using your existing function
+    
+    return new WP_REST_Response(array(
+        'success' => true,
+        'logo_url' => $logo
+    ), 200);
+}
+
+// Add logo to header.php or your React component template
+function secondtry_custom_logo() {
+    $logo = get_theme_mod('header_logo', get_template_directory_uri() . '/src/Assets/images/logo.png');
+    return $logo;
+}
